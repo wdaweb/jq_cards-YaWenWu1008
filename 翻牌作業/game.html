@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-image: url(./images/wallpaperflare.com_wallpaper.jpg);
+      background-repeat: no-repeat;
+      object-fit: contain;
+    }
+
+    #game {
+      width: 1100px;
+      height: 920px;
+      /* background: #999; */
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .card {
+      width: 140px;
+      height: 260px;
+      position: relative;
+      margin: 10px;
+      transform-style: preserve-3d;
+      transition: transform 1s;
+      cursor: pointer;
+
+    }
+
+    .card-front {
+      width: 100%;
+      height: 100%;
+      background-image: url(./images/a1.jpg);
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      backface-visibility: hidden;
+      position: absolute;
+    }
+
+    .card-back {
+      width: 100%;
+      height: 100%;
+      background-image: url(./images/卡背.png);
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: absolute;
+      transform: rotateY(180deg);
+      backface-visibility: hidden;
+
+    }
+
+    .card-close {
+      transform: rotateY(180deg);
+
+    }
+  </style>
+</head>
+
+<body>
+  <div id="game"></div>
+  <audio src="./music/Toy Story Youve Got a Friend in Me (StrideRagtime Piano).mp3" autoplay></audio>
+
+  <script src="./jquery-3.6.4.min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.3/sweetalert2.all.min.js'
+    integrity='sha512-/iBgV43zPirSC0tue+PT/1VHGs7En24twBmT+sVMgn9PTaOpKfbgIyL5YsGKlbAIxcwz9S8W/YEnYjpIYj2Axw=='
+    crossorigin='anonymous'></script>
+  <script>
+    function playAudio() {
+      const audio = document.createElement("audio")
+      audio.src = './music/音效：弹出框提示音.mp3'
+      audio.play()
+    }
+    for (let i = 0; i < 18; i++) {
+      $('#game').append(`
+        <div class="card card-close">
+          <div class="card-front"></div>
+          <div class="card-back"></div>
+        </div>
+      `)
+    }
+    for (let i = 0; i < 18; i++) {
+      const num = i % 9 + 1
+      $('.card').eq(i).find('.card-front').css('background-image', `url(./images/a${num}.jpg)`)
+      $('.card').eq(i).attr('data-card', num)
+    }
+    for (let i = 0; i < 18; i++) {
+      const target = Math.round(Math.random() * 15)
+      $('.card').eq(target).insertAfter($('.card').eq(i))
+    }
+
+    let startTime
+    const formatTime = time => {
+      return Math.floor(time / 1000)
+    }
+    $('#game').on('click', '.card', function () {
+      playAudio()
+      if (!startTime) {
+        startTime = new Date().getTime()
+      }
+      if (
+        $('.card:not(.card-close)').length < 2 &&
+        $(this).hasClass('card-close') &&
+        !$(this).hasClass('card-ok')
+      ) {
+        $(this).removeClass('card-close')
+      }
+
+      if ($('.card:not(.card-close)').length === 2) {
+        if (
+          $('.card:not(.card-close)').eq(0).attr('data-card') ===
+          $('.card:not(.card-close)').eq(1).attr('data-card')
+        ) {
+          $('.card:not(.card-close)').addClass('card-ok')
+          $('.card:not(.card-close)').fadeTo(1000, 0)
+        }
+
+        setTimeout(function () {
+          $('.card:not(.card-close)').addClass('card-close')
+          if ($('.card-ok').length === $('.card').length) {
+            const endTime = new Date().getTime()
+            const timeTaken = endTime - startTime
+            const finalTime = formatTime(timeTaken)
+            Swal.fire({
+              icon: 'success',
+              title: '恭喜過關',
+              text: `你總共花了${finalTime}秒`
+            })
+          }
+        }, 1000)
+      }
+
+
+    })
+  </script>
+</body>
+
+</html>
